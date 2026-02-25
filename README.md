@@ -66,7 +66,7 @@ The project is built using **HTML, CSS, and JavaScript** with a clean dark UI, s
 
 ## 🚀 Live Demo
 
-👉 Live Website: Coming Soon
+👉 Live Website: https://fsafiya187.github.io/mini-apps/
 
 
 
