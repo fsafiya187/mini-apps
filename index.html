@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Apps</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --accent4: #10b981;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --danger: #ef4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124,58,237,0.15), transparent);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #e2e8f0 0%, #7c3aed 60%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Tab nav */
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.4rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 0.55rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-transform: uppercase;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: #fff;
+    background: var(--accent-tab);
+    box-shadow: 0 0 20px var(--accent-tab-glow);
+  }
+
+  .tab-btn[data-app="todo"] { --accent-tab: var(--accent); --accent-tab-glow: rgba(124,58,237,0.4); }
+  .tab-btn[data-app="quiz"] { --accent-tab: var(--accent2); --accent-tab-glow: rgba(6,182,212,0.4); }
+  .tab-btn[data-app="calc"] { --accent-tab: var(--accent3); --accent-tab-glow: rgba(245,158,11,0.4); }
+  .tab-btn[data-app="weather"] { --accent-tab: var(--accent4); --accent-tab-glow: rgba(16,185,129,0.4); }
+
+  /* App panel */
+  .app-panel {
+    display: none;
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .app-panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ===== TO-DO ===== */
+  .todo-input-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+  }
+
+  input[type="text"], input[type="number"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+
+  input:focus { border-color: var(--accent); }
+
+  .btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 0.7rem 1.2rem;
+    white-space: nowrap;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.97); }
+  .btn.cyan { background: var(--accent2); }
+  .btn.amber { background: var(--accent3); color: #1a1000; }
+  .btn.green { background: var(--accent4); }
+  .btn.danger { background: var(--danger); }
+  .btn.outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn.outline:hover { color: var(--text); border-color: var(--text); }
+
+  .todo-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    transition: opacity 0.2s;
+    animation: fadeUp 0.2s ease;
+  }
+
+  .todo-item.done { opacity: 0.45; }
+  .todo-item.done .todo-text { text-decoration: line-through; }
+
+  .todo-check {
+    width: 18px; height: 18px;
+    border: 2px solid var(--accent);
+    border-radius: 5px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .todo-item.done .todo-check { background: var(--accent); }
+  .todo-check::after { content: '✓'; color: white; font-size: 11px; display: none; }
+  .todo-item.done .todo-check::after { display: block; }
+
+  .todo-text { flex: 1; font-size: 0.85rem; }
+
+  .todo-del {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 1rem; padding: 0 0.2rem; transition: color 0.15s;
+  }
+  .todo-del:hover { color: var(--danger); }
+
+  .todo-stats {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 1rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ===== QUIZ ===== */
+  .quiz-progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .quiz-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .quiz-question {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    line-height: 1.4;
+    min-height: 3.5rem;
+  }
+
+  .quiz-meta { font-size: 0.72rem; color: var(--muted); margin-bottom: 1rem; letter-spacing: 0.06em; }
+
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .quiz-opt {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent2); }
+  .quiz-opt.correct { border-color: var(--accent4); background: rgba(16,185,129,0.1); color: #6ee7b7; }
+  .quiz-opt.wrong   { border-color: var(--danger);  background: rgba(239,68,68,0.1);  color: #fca5a5; }
+  .quiz-opt:disabled { cursor: default; }
+
+  .quiz-feedback {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    min-height: 1.2rem;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  .quiz-score {
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .quiz-score .score-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .quiz-score p { color: var(--muted); font-size: 0.82rem; margin: 0.5rem 0 1.5rem; }
+
+  /* ===== CALCULATOR ===== */
+  .calc-display {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    text-align: right;
+    margin-bottom: 1rem;
+  }
+
+  .calc-expr { font-size: 0.75rem; color: var(--muted); min-height: 1.1rem; letter-spacing: 0.03em; }
+  .calc-main { font-size: 2.2rem; font-weight: 300; letter-spacing: -0.02em; word-break: break-all; }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .calc-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.9rem 0;
+    transition: background 0.1s, transform 0.08s;
+  }
+
+  .calc-btn:hover { background: var(--border); }
+  .calc-btn:active { transform: scale(0.94); }
+
+  .calc-btn.op { color: var(--accent3); }
+  .calc-btn.eq { background: var(--accent3); color: #1a1000; border-color: var(--accent3); }
+  .calc-btn.eq:hover { opacity: 0.88; background: var(--accent3); }
+  .calc-btn.clear { color: var(--danger); }
+  .calc-btn.span2 { grid-column: span 2; }
+
+  /* ===== WEATHER ===== */
+  .weather-input-row { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; }
+
+  .weather-result {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .weather-result.visible { display: block; }
+
+  .weather-city { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .weather-icon { font-size: 4rem; margin: 0.5rem 0; line-height: 1; }
+  .weather-temp { font-size: 3rem; font-weight: 300; }
+  .weather-desc { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.3rem; }
+
+  .weather-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .weather-stat {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  .weather-stat-label { color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.2rem; }
+
+  .weather-api-note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.8rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .api-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.55rem 0.9rem;
+    outline: none;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .api-input:focus { border-color: var(--accent4); }
+
+  .weather-error { color: var(--danger); font-size: 0.8rem; margin-top: 0.6rem; text-align: center; display: none; }
+  .weather-error.visible { display: block; }
+
+  .spinner {
+    display: none;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent4);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+  .spinner.visible { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mini Apps</h1>
+  <p>Four interactive tools · Choose below</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-app="todo">☑ To-Do</button>
+  <button class="tab-btn" data-app="quiz">❓ Quiz</button>
+  <button class="tab-btn" data-app="calc">⌗ Calc</button>
+  <button class="tab-btn" data-app="weather">⛅ Weather</button>
+</nav>
+
+<!-- ===== TO-DO APP ===== -->
+<section class="app-panel active" id="panel-todo">
+  <div class="panel-title">☑ To-Do List</div>
+  <div class="todo-input-row">
+    <input type="text" id="todo-input" placeholder="Add a task…" maxlength="80">
+    <button class="btn" id="todo-add-btn">Add</button>
+  </div>
+  <ul class="todo-list" id="todo-list"></ul>
+  <p class="todo-stats" id="todo-stats">No tasks yet.</p>
+</section>
+
+<!-- ===== QUIZ APP ===== -->
+<section class="app-panel" id="panel-quiz">
+  <div class="panel-title">❓ Quick Quiz</div>
+  <div id="quiz-game">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
+    <div class="quiz-meta" id="quiz-meta">Question 1 / 8</div>
+    <div class="quiz-question" id="quiz-question"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+  </div>
+  <div class="quiz-score" id="quiz-score" style="display:none">
+    <div class="score-num" id="quiz-score-num">0/8</div>
+    <p id="quiz-score-msg"></p>
+    <button class="btn cyan" id="quiz-restart">Play Again</button>
+  </div>
+</section>
+
+<!-- ===== CALCULATOR ===== -->
+<section class="app-panel" id="panel-calc">
+  <div class="panel-title">⌗ Calculator</div>
+  <div class="calc-display">
+    <div class="calc-expr" id="calc-expr"></div>
+    <div class="calc-main" id="calc-main">0</div>
+  </div>
+  <div class="calc-grid" id="calc-grid">
+    <button class="calc-btn clear" data-action="clear">C</button>
+    <button class="calc-btn op"    data-action="sign">±</button>
+    <button class="calc-btn op"    data-action="pct">%</button>
+    <button class="calc-btn op"    data-action="op" data-val="÷">÷</button>
+
+    <button class="calc-btn" data-action="num" data-val="7">7</button>
+    <button class="calc-btn" data-action="num" data-val="8">8</button>
+    <button class="calc-btn" data-action="num" data-val="9">9</button>
+    <button class="calc-btn op" data-action="op" data-val="×">×</button>
+
+    <button class="calc-btn" data-action="num" data-val="4">4</button>
+    <button class="calc-btn" data-action="num" data-val="5">5</button>
+    <button class="calc-btn" data-action="num" data-val="6">6</button>
+    <button class="calc-btn op" data-action="op" data-val="−">−</button>
+
+    <button class="calc-btn" data-action="num" data-val="1">1</button>
+    <button class="calc-btn" data-action="num" data-val="2">2</button>
+    <button class="calc-btn" data-action="num" data-val="3">3</button>
+    <button class="calc-btn op" data-action="op" data-val="+">+</button>
+
+    <button class="calc-btn span2" data-action="num" data-val="0">0</button>
+    <button class="calc-btn" data-action="dot">.</button>
+    <button class="calc-btn eq" data-action="eq">=</button>
+  </div>
+</section>
+
+<!-- ===== WEATHER APP ===== -->
+<section class="app-panel" id="panel-weather">
+  <div class="panel-title">⛅ Weather</div>
+  <label style="font-size:0.72rem;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;display:block;margin-bottom:0.3rem;">OpenWeatherMap API Key</label>
+  <input class="api-input" type="text" id="weather-apikey" placeholder="Paste your free API key here…">
+  <div class="weather-input-row">
+    <input type="text" id="weather-city" placeholder="City name…">
+    <button class="btn green" id="weather-search-btn">Search</button>
+  </div>
+  <div class="spinner" id="weather-spinner"></div>
+  <div class="weather-error" id="weather-error"></div>
+  <div class="weather-result" id="weather-result">
+    <div class="weather-city" id="w-city"></div>
+    <div class="weather-icon" id="w-icon"></div>
+    <div class="weather-temp" id="w-temp"></div>
+    <div class="weather-desc" id="w-desc"></div>
+    <div class="weather-grid">
+      <div class="weather-stat"><div class="weather-stat-label">Feels like</div><div id="w-feels"></div></div>
+      <div class="weather-stat"><div class="weather-stat-label">Humidity</div><div id="w-humidity"></div></div>
+      <div class="weather-stat"><div class="weather-stat-label">Wind</div><div id="w-wind"></div></div>
+      <div class="weather-stat"><div class="weather-stat-label">Visibility</div><div id="w-vis"></div></div>
+    </div>
+  </div>
+  <p class="weather-api-note">Free API key at <strong>openweathermap.org</strong> → sign up → My API Keys</p>
+</section>
+
+<script>
+// ========== TABS ==========
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.app-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.app).classList.add('active');
+  });
+});
+
+// ========== TO-DO ==========
+const todoInput = document.getElementById('todo-input');
+const todoList  = document.getElementById('todo-list');
+const todoStats = document.getElementById('todo-stats');
+let todos = [];
+
+function renderTodos() {
+  todoList.innerHTML = '';
+  todos.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (t.done ? ' done' : '');
+    li.innerHTML = `
+      <div class="todo-check" data-i="${i}"></div>
+      <span class="todo-text">${escHtml(t.text)}</span>
+      <button class="todo-del" data-i="${i}" title="Delete">✕</button>`;
+    todoList.appendChild(li);
+  });
+  const done = todos.filter(t => t.done).length;
+  todoStats.textContent = todos.length ? `${done} / ${todos.length} completed` : 'No tasks yet.';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addTodo() {
+  const val = todoInput.value.trim();
+  if (!val) return;
+  todos.push({ text: val, done: false });
+  todoInput.value = '';
+  renderTodos();
+}
+
+document.getElementById('todo-add-btn').addEventListener('click', addTodo);
+todoInput.addEventListener('keydown', e => e.key === 'Enter' && addTodo());
+
+todoList.addEventListener('click', e => {
+  const i = e.target.closest('[data-i]')?.dataset.i;
+  if (i === undefined) return;
+  if (e.target.closest('.todo-check')) {
+    todos[i].done = !todos[i].done;
+    renderTodos();
+  } else if (e.target.closest('.todo-del')) {
+    todos.splice(i, 1);
+    renderTodos();
+  }
+});
+
+renderTodos();
+
+// ========== QUIZ ==========
+const questions = [
+  { q: 'What does DOM stand for?', opts: ['Document Object Model','Data Object Map','Dynamic Object Module','Document Order Manager'], ans: 0 },
+  { q: 'Which keyword declares a block-scoped variable in JS?', opts: ['var','let','def','dim'], ans: 1 },
+  { q: 'What HTML tag links an external stylesheet?', opts: ['<script>','<style>','<link>','<css>'], ans: 2 },
+  { q: 'Which CSS property controls stacking order?', opts: ['order','layer','z-index','stack'], ans: 2 },
+  { q: 'What does "===", the strict equality operator, also check?', opts: ['Length','Type','Scope','Reference'], ans: 1 },
+  { q: 'Which method adds an element to the end of an array?', opts: ['push()','pop()','shift()','splice()'], ans: 0 },
+  { q: 'What does CSS stand for?', opts: ['Creative Style Sheets','Cascading Style Sheets','Computer Style System','Colorful Style Sets'], ans: 1 },
+  { q: 'Which event fires when the DOM is fully loaded?', opts: ['onload','DOMReady','DOMContentLoaded','pageload'], ans: 2 },
+];
+
+let qIndex = 0, score = 0, answered = false;
+
+function loadQuestion() {
+  answered = false;
+  const q = questions[qIndex];
+  document.getElementById('quiz-meta').textContent = `Question ${qIndex + 1} / ${questions.length}`;
+  document.getElementById('quiz-progress').style.width = `${(qIndex / questions.length) * 100}%`;
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-feedback').textContent = '';
+  const opts = document.getElementById('quiz-options');
+  opts.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => selectAnswer(i, btn));
+    opts.appendChild(btn);
+  });
+}
+
+function selectAnswer(i, btn) {
+  if (answered) return;
+  answered = true;
+  const correct = questions[qIndex].ans;
+  document.querySelectorAll('.quiz-opt').forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === correct) b.classList.add('correct');
+  });
+  const fb = document.getElementById('quiz-feedback');
+  if (i === correct) {
+    score++;
+    btn.classList.add('correct');
+    fb.style.color = 'var(--accent4)';
+    fb.textContent = '✓ Correct!';
+  } else {
+    btn.classList.add('wrong');
+    fb.style.color = 'var(--danger)';
+    fb.textContent = '✗ Wrong — highlighted answer was correct.';
+  }
+  setTimeout(() => {
+    qIndex++;
+    if (qIndex < questions.length) {
+      loadQuestion();
+    } else {
+      showScore();
+    }
+  }, 1200);
+}
+
+function showScore() {
+  document.getElementById('quiz-game').style.display = 'none';
+  const scoreEl = document.getElementById('quiz-score');
+  scoreEl.style.display = 'block';
+  document.getElementById('quiz-score-num').textContent = `${score}/${questions.length}`;
+  const pct = score / questions.length;
+  const msg = pct === 1 ? '🎉 Perfect score!' : pct >= 0.75 ? '🔥 Great job!' : pct >= 0.5 ? '👍 Not bad!' : '📚 Keep studying!';
+  document.getElementById('quiz-score-msg').textContent = msg;
+}
+
+document.getElementById('quiz-restart').addEventListener('click', () => {
+  qIndex = 0; score = 0;
+  document.getElementById('quiz-game').style.display = 'block';
+  document.getElementById('quiz-score').style.display = 'none';
+  loadQuestion();
+});
+
+loadQuestion();
+
+// ========== CALCULATOR ==========
+let calcCurrent = '0', calcPrev = '', calcOp = '', calcNewNum = false;
+
+function calcUpdate() {
+  document.getElementById('calc-main').textContent = calcCurrent;
+  document.getElementById('calc-expr').textContent = calcOp ? `${calcPrev} ${calcOp}` : '';
+}
+
+function calcCompute() {
+  const a = parseFloat(calcPrev), b = parseFloat(calcCurrent);
+  if (isNaN(a) || isNaN(b)) return b;
+  switch (calcOp) {
+    case '+': return a + b;
+    case '−': return a - b;
+    case '×': return a * b;
+    case '÷': return b === 0 ? 'Error' : a / b;
+  }
+  return b;
+}
+
+document.getElementById('calc-grid').addEventListener('click', e => {
+  const btn = e.target.closest('.calc-btn');
+  if (!btn) return;
+  const { action, val } = btn.dataset;
+
+  if (action === 'clear') {
+    calcCurrent = '0'; calcPrev = ''; calcOp = ''; calcNewNum = false;
+  } else if (action === 'num') {
+    if (calcNewNum) { calcCurrent = val; calcNewNum = false; }
+    else calcCurrent = calcCurrent === '0' ? val : calcCurrent + val;
+  } else if (action === 'dot') {
+    if (calcNewNum) { calcCurrent = '0.'; calcNewNum = false; }
+    else if (!calcCurrent.includes('.')) calcCurrent += '.';
+  } else if (action === 'sign') {
+    calcCurrent = String(-parseFloat(calcCurrent));
+  } else if (action === 'pct') {
+    calcCurrent = String(parseFloat(calcCurrent) / 100);
+  } else if (action === 'op') {
+    if (calcOp && !calcNewNum) {
+      calcCurrent = String(calcCompute());
+    }
+    calcPrev = calcCurrent; calcOp = val; calcNewNum = true;
+  } else if (action === 'eq') {
+    if (calcOp) {
+      calcCurrent = String(calcCompute());
+      calcPrev = ''; calcOp = ''; calcNewNum = true;
+    }
+  }
+  // format large numbers
+  if (!isNaN(calcCurrent) && calcCurrent !== '' && !calcCurrent.endsWith('.')) {
+    const n = parseFloat(calcCurrent);
+    if (Math.abs(n) > 1e10) calcCurrent = n.toExponential(4);
+  }
+  calcUpdate();
+});
+
+calcUpdate();
+
+// ========== WEATHER ==========
+const weatherIconMap = {
+  '01d': '☀️', '01n': '🌙', '02d': '⛅', '02n': '☁️',
+  '03d': '☁️', '03n': '☁️', '04d': '☁️', '04n': '☁️',
+  '09d': '🌧️', '09n': '🌧️', '10d': '🌦️', '10n': '🌧️',
+  '11d': '⛈️', '11n': '⛈️', '13d': '❄️', '13n': '❄️',
+  '50d': '🌫️', '50n': '🌫️',
+};
+
+document.getElementById('weather-search-btn').addEventListener('click', fetchWeather);
+document.getElementById('weather-city').addEventListener('keydown', e => e.key === 'Enter' && fetchWeather());
+
+async function fetchWeather() {
+  const apiKey = document.getElementById('weather-apikey').value.trim();
+  const city   = document.getElementById('weather-city').value.trim();
+  const errEl  = document.getElementById('weather-error');
+  const resEl  = document.getElementById('weather-result');
+  const spin   = document.getElementById('weather-spinner');
+
+  errEl.classList.remove('visible');
+  resEl.classList.remove('visible');
+
+  if (!apiKey) { showWErr('Please enter your OpenWeatherMap API key above.'); return; }
+  if (!city)   { showWErr('Please enter a city name.'); return; }
+
+  spin.classList.add('visible');
+
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+    const res = await fetch(url);
+    const data = await res.json();
+    spin.classList.remove('visible');
+
+    if (!res.ok) {
+      showWErr(data.message || 'City not found.');
+      return;
+    }
+
+    document.getElementById('w-city').textContent    = `${data.name}, ${data.sys.country}`;
+    document.getElementById('w-icon').textContent    = weatherIconMap[data.weather[0].icon] || '🌡️';
+    document.getElementById('w-temp').textContent    = `${Math.round(data.main.temp)}°C`;
+    document.getElementById('w-desc').textContent    = data.weather[0].description;
+    document.getElementById('w-feels').textContent   = `${Math.round(data.main.feels_like)}°C`;
+    document.getElementById('w-humidity').textContent= `${data.main.humidity}%`;
+    document.getElementById('w-wind').textContent    = `${Math.round(data.wind.speed)} m/s`;
+    document.getElementById('w-vis').textContent     = `${(data.visibility/1000).toFixed(1)} km`;
+    resEl.classList.add('visible');
+  } catch {
+    spin.classList.remove('visible');
+    showWErr('Network error — check your connection.');
+  }
+}
+
+function showWErr(msg) {
+  const el = document.getElementById('weather-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+</script>
+</body>
+</html>
